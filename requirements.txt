@@ -1,0 +1,4 @@
+# Requirements for the story generator
+requests
+flask
+python-dotenv

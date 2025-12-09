@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Story Generator - Powered by Tuyishime</title>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+
+        .card-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #2563eb, #7c3aed);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .story-container {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-2xl">
+            <div class="card-glass rounded-2xl p-6 md:p-8 shadow-xl">
+                <!-- Header Section -->
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl md:text-4xl font-bold gradient-text bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        _virtual Story Generator
+                    </h1>
+                    <p class="mt-3 text-gray-600 max-w-md mx-auto">
+                        Transform your imagination into captivating stories with the power of AI
+                    </p>
+                </div>
+
+                <!-- Input Section -->
+                <div class="mb-6">
+                    <label for="prompt" class="block text-sm font-medium text-gray-700 mb-2">
+                        Story Prompt
+                    </label>
+                    <div class="relative">
+                        <textarea
+                            id="prompt"
+                            rows="4"
+                            placeholder="Enter your story prompt... For example: 'A brave knight encounters a mysterious dragon in a magical forest...'"
+                            class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-none"
+                        ></textarea>
+                        <div class="absolute bottom-3 right-3 text-xs text-gray-400">
+                            <span id="char-count">0</span>/2000
+                        </div>
+                    </div>
+
+                    <!-- Additional Controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Creativity Level
+                            </label>
+                            <select id="temperature" class="input-field w-full py-2">
+                                <option value="0.5">Balanced</option>
+                                <option value="0.7" selected>Medium</option>
+                                <option value="0.8">High</option>
+                                <option value="1.0">Maximum</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Story Length
+                            </label>
+                            <select id="max-tokens" class="input-field w-full py-2">
+                                <option value="500">Short (500 words)</option>
+                                <option value="800">Medium (800 words)</option>
+                                <option value="1000" selected>Long (1000 words)</option>
+                                <option value="1500">Very Long (1500 words)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Language
+                            </label>
+                            <select id="language" class="input-field w-full py-2">
+                                <option value="english" selected>English</option>
+                                <option value="swahili">Swahili</option>
+                                <option value="chichewa">Chichewa</option>
+                                <option value="zulu">Zulu</option>
+                                <option value="yao">Yao</option>
+                                <option value="french">French</option>
+                                <option value="portuguese">Portuguese</option>
+                                <option value="tumbuka">Tumbuka</option>
+                                <option value="kinyarwanda">Kinyarwanda</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <button id="generate-btn" class="btn-primary flex-1 py-3 px-6 rounded-lg text-white font-semibold flex items-center justify-center min-w-[150px]">
+                        <span>Generate Story</span>
+                        <svg id="generate-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <button id="random-prompt-btn" class="btn-secondary py-3 px-6 rounded-lg font-medium flex items-center justify-center min-w-[150px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        Random Prompt
+                    </button>
+
+                    <button id="clear-btn" class="btn-secondary py-3 px-6 rounded-lg font-medium flex items-center justify-center min-w-[100px]">
+                        Clear
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Story Output Section -->
+                <div id="results-section" class="hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                        </svg>
+                        Your Generated Story
+                    </h3>
+
+                    <div id="story-output" class="story-container rounded-xl p-5 min-h-[200px]">
+                        <div class="loading flex flex-col items-center justify-center py-10">
+                            <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                            <p class="text-gray-600">Generating your story...</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        <button id="copy-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                            </svg>
+                            Copy Story
+                        </button>
+                        <button id="save-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            Save Story
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-6 text-sm text-gray-500">
+                <p>Powered by Tuyishime • Craft unique stories with the power of advanced AI</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Character counter
+        const promptTextarea = document.getElementById('prompt');
+        const charCountElement = document.getElementById('char-count');
+
+        promptTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCountElement.textContent = count;
+
+            // Optional: Add visual feedback when approaching limit
+            if(count > 1800) {
+                charCountElement.classList.add('text-red-500');
+            } else {
+                charCountElement.classList.remove('text-red-500');
+            }
+        });
+
+        // Generate story
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt').value.trim();
+            const outputDiv = document.getElementById('story-output');
+            const btn = document.getElementById('generate-btn');
+            const icon = document.getElementById('generate-icon');
+            const resultsSection = document.getElementById('results-section');
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const maxTokens = parseInt(document.getElementById('max-tokens').value);
+            const language = document.getElementById('language').value;
+
+            if (!prompt) {
+                alert('Please enter a story prompt');
+                return;
+            }
+
+            // Show loading state
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+            icon.style.display = 'none';
+            btn.innerHTML = '<div class="loading-spinner mr-2"></div> Generating...';
+
+            // Show results section
+            resultsSection.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        temperature: temperature,
+                        max_tokens: maxTokens,
+                        language: language
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    outputDiv.innerHTML = `<div class="prose max-w-none"><p class="whitespace-pre-line">${data.story}</p></div>`;
+                } else {
+                    outputDiv.innerHTML = `<div class="text-red-500">Error: ${data.error || 'Failed to generate story'}</div>`;
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `<div class="text-red-500">Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                icon.style.display = 'inline-block';
+                btn.innerHTML = '<span>Generate Story</span><svg id="generate-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>';
+            }
+        });
+
+        // Clear button
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('prompt').value = '';
+            document.getElementById('char-count').textContent = '0';
+            document.getElementById('results-section').classList.add('hidden');
+        });
+
+        // Random prompt button
+        document.getElementById('random-prompt-btn').addEventListener('click', async () => {
+            try {
+                // Show a loading state
+                const randomBtn = document.getElementById('random-prompt-btn');
+                const originalHTML = randomBtn.innerHTML;
+                randomBtn.disabled = true;
+                randomBtn.innerHTML = '<div class="loading-spinner mr-2"></div> Generating...';
+
+                // Fetch a random prompt from the backend
+                const response = await fetch('/random_prompt', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Set the random prompt in the textarea
+                    document.getElementById('prompt').value = data.prompt;
+
+                    // Update character count
+                    const count = data.prompt.length;
+                    document.getElementById('char-count').textContent = count;
+
+                    // Show feedback
+                    randomBtn.innerHTML = 'Prompt Generated!';
+                    setTimeout(() => {
+                        randomBtn.innerHTML = originalHTML;
+                        randomBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    console.error('Error generating random prompt:', data.error);
+                    randomBtn.innerHTML = originalHTML;
+                    randomBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error fetching random prompt:', error);
+                const randomBtn = document.getElementById('random-prompt-btn');
+                randomBtn.innerHTML = 'Error, try again!';
+                setTimeout(() => {
+                    randomBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>Random Prompt';
+                }, 2000);
+            }
+        });
+
+        // Copy story to clipboard
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const storyText = document.querySelector('#story-output .whitespace-pre-line');
+            if(storyText) {
+                navigator.clipboard.writeText(storyText.innerText)
+                    .then(() => {
+                        // Show feedback
+                        const copyBtn = document.getElementById('copy-btn');
+                        const originalHTML = copyBtn.innerHTML;
+                        copyBtn.innerHTML = 'Copied!';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalHTML;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
+            }
+        });
+
+        // Save story (would need backend support for actual file download)
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const storyText = document.querySelector('#story-output .whitespace-pre-line');
+            if(storyText) {
+                const prompt = document.getElementById('prompt').value.substring(0, 30).replace(/[^\w\s]/gi, '');
+                const story = storyText.innerText;
+
+                // Create a downloadable text file
+                const blob = new Blob([`Prompt: ${document.getElementById('prompt').value}\n\n${story}`], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `story_${prompt}_${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 0);
+            }
+        });
+    </script>
+</body>
+</html>
