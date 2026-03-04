@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: virtual-story-generator
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run_app:app
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FLASK_ENV
+        value: production
