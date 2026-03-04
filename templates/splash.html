@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Virtual Story Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .splash-container {
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-image {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            object-fit: cover;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .creator-name {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out 0.3s both;
+        }
+
+        .creator-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            animation: slideUp 0.8s ease-out 0.5s both;
+        }
+
+        .quote-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-top: 2rem;
+            max-width: 600px;
+            animation: slideUp 0.8s ease-out 0.7s both;
+        }
+
+        .quote {
+            color: white;
+            font-size: 1.1rem;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .quote-author {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin: 2rem auto 0;
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out 0.9s both;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            animation: loading 5s linear forwards;
+        }
+
+        @keyframes loading {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .redirect-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            animation: fadeIn 0.5s ease-out 1s both;
+        }
+
+        @media (max-width: 600px) {
+            .profile-image {
+                width: 200px;
+                height: 200px;
+            }
+
+            .creator-name {
+                font-size: 1.5rem;
+            }
+
+            .creator-title {
+                font-size: 1rem;
+            }
+
+            .quote {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <img src="{{ url_for('static', filename='images/profile.JPG') }}" alt="Tuyishime Martin" class="profile-image">
+        
+        <h1 class="creator-name">Tuyishime Martin</h1>
+        <p class="creator-title">Creator - Virtual Story Generator</p>
+        
+        <div class="quote-container">
+            <p class="quote">
+                "Every great story starts with a single idea. Let your imagination run wild and transform your thoughts 
+                into extraordinary tales. Your unique stories deserve to be told, and now you have the power to bring them to life."
+            </p>
+            <p class="quote-author">— Start Your Journey Today</p>
+        </div>
+        
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+        <p class="redirect-text">Redirecting to login...</p>
+    </div>
+
+    <script>
+        // Redirect to login page after 5 seconds
+        setTimeout(function() {
+            window.location.href = '/login';
+        }, 5000);
+    </script>
+</body>
+</html>

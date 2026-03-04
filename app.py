@@ -195,7 +195,7 @@ def logout():
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('generate_story_page'))
-    return redirect(url_for('login'))
+    return render_template('splash.html')
 
 
 @app.route('/generate')
