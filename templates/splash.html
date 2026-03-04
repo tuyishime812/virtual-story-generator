@@ -12,91 +12,83 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #000;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #000000 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            transform: scale(0.7);
-            transform-origin: center center;
+            justify-content: flex-start;
+            padding-top: 20px;
+            overflow-x: hidden;
         }
 
         .splash-container {
             text-align: center;
             width: 100%;
-            max-width: 800px;
-            padding: 2rem;
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            max-width: 900px;
+            padding: 20px;
         }
 
         .profile-image {
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             height: auto;
             border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 3px solid #fff;
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2);
             object-fit: cover;
-            animation: fadeIn 1s ease-out;
         }
 
         .creator-name {
             color: #fff;
-            font-size: 2.5rem;
+            font-size: 32px;
             font-weight: bold;
-            margin-top: 2rem;
-            animation: fadeIn 1s ease-out 0.3s both;
+            margin-top: 25px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         .creator-title {
-            color: #ccc;
-            font-size: 1.3rem;
-            margin-top: 0.5rem;
-            animation: fadeIn 1s ease-out 0.5s both;
+            color: #fff;
+            font-size: 18px;
+            margin-top: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .quote-container {
-            margin-top: 2.5rem;
-            padding: 0 1rem;
-            animation: fadeIn 1s ease-out 0.7s both;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .quote {
             color: #fff;
-            font-size: 1.3rem;
+            font-size: 18px;
             font-style: italic;
-            line-height: 1.8;
-            max-width: 700px;
-            margin: 0 auto;
+            line-height: 1.6;
         }
 
         .quote-author {
-            color: #999;
-            font-size: 1rem;
-            margin-top: 1.5rem;
-            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+            margin-top: 15px;
+            font-weight: bold;
         }
 
         .loading-bar {
-            width: 250px;
-            height: 3px;
+            width: 200px;
+            height: 4px;
             background: #333;
             border-radius: 2px;
-            margin: 2.5rem auto 0;
+            margin: 25px auto 0;
             overflow: hidden;
-            animation: fadeIn 1s ease-out 0.9s both;
         }
 
         .loading-progress {
             height: 100%;
-            background: #fff;
+            background: linear-gradient(90deg, #667eea, #764ba2);
             border-radius: 2px;
             animation: loading 5s linear forwards;
         }
@@ -107,10 +99,9 @@
         }
 
         .redirect-text {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            animation: fadeIn 0.5s ease-out 1s both;
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 10px;
         }
 
         @media (max-width: 600px) {
@@ -119,15 +110,15 @@
             }
 
             .creator-name {
-                font-size: 1.8rem;
+                font-size: 24px;
             }
 
             .creator-title {
-                font-size: 1rem;
+                font-size: 14px;
             }
 
             .quote {
-                font-size: 1.1rem;
+                font-size: 14px;
             }
         }
     </style>
