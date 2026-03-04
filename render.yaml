@@ -3,7 +3,7 @@ services:
     name: virtual-story-generator
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python run_app.py
+    startCommand: gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: GROQ_API_KEY
         sync: false
