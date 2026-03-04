@@ -13,11 +13,13 @@
 
         body {
             font-family: Arial, sans-serif;
-            background: #000;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: grid;
             place-items: center;
             overflow: hidden;
+            transform: scale(0.85);
+            transform-origin: center center;
         }
 
         .splash-container {
@@ -37,27 +39,29 @@
             height: auto;
             max-height: 40vh;
             border-radius: 10px;
-            border: 2px solid #fff;
+            border: 3px solid #e94560;
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
             object-fit: cover;
             justify-self: center;
         }
 
         .creator-name {
-            color: #fff;
+            color: #e94560;
             font-size: 28px;
             font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .creator-title {
-            color: #bbb;
+            color: #fff;
             font-size: 14px;
         }
 
         .quote-container {
             padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(233, 69, 96, 0.1);
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(233, 69, 96, 0.3);
         }
 
         .quote {
@@ -68,7 +72,7 @@
         }
 
         .quote-author {
-            color: #aaa;
+            color: #e94560;
             font-size: 12px;
             margin-top: 10px;
             font-weight: bold;
@@ -76,17 +80,19 @@
 
         .loading-bar {
             width: 180px;
-            height: 3px;
+            height: 4px;
             background: #333;
             border-radius: 2px;
             margin: 10px auto 0;
             overflow: hidden;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
         }
 
         .loading-progress {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
             border-radius: 2px;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.6);
             animation: loading 10s linear forwards;
         }
 
