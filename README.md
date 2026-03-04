@@ -1,24 +1,24 @@
 # Virtual Story Generator
 
-A creative application that generates unique stories based on user prompts using the Gemini AI model.
+A creative application that generates unique stories based on user prompts using the GROQ AI platform with the Llama 3.3 70B model.
 
 ## Features
 
 - Modern, responsive web interface with TailwindCSS styling
-- Real-time story creation using Gemini AI
+- Real-time story creation powered by GROQ AI
 - Professional gradient design with glassmorphism effects
 - Adjustable creativity level and story length controls
 - Character counter for prompts
 - Copy and save functionality for generated stories
 - Random story prompt generator for inspiration
-- Multi-language support: English, Swahili, Chichewa, Zulu, Yao, French, Portuguese, Tumbuka, and Kinyarwanda
+- Multi-language support: English, Swahili, Chichewa, Zulu, Yao, French, Portuguese, and Kinyarwanda
 - Mobile-friendly responsive design
 - Clean and intuitive user experience
 
 ## Prerequisites
 
 - Python 3.7 or higher
-- A Gemini API key from Google AI Studio
+- A GROQ API key from https://console.groq.com/
 
 ## Installation
 
@@ -29,9 +29,9 @@ A creative application that generates unique stories based on user prompts using
 pip install -r requirements.txt
 ```
 
-3. Set up your Gemini API key:
+3. Set up your GROQ API key:
    - Create a `.env` file in the project root directory
-   - Add your API key to the file: `GEMINI_API_KEY=your_actual_api_key_here`
+   - Add your API key to the file: `GROQ_API_KEY=your_actual_api_key_here`
    - Alternatively, set the environment variable directly
 
 ## Usage
@@ -52,11 +52,11 @@ python run_app.py
 
 The application requires the following environment variable:
 
-- `GEMINI_API_KEY` - Your Gemini API key for authentication
+- `GROQ_API_KEY` - Your GROQ API key for authentication
 
 ## API Integration
 
-The application uses the Gemini API. The integration is set up to use the `gemini-pro` model which is well-suited for creative text generation like stories.
+The application uses the GROQ API with the `llama-3.3-70b-versatile` model, which is well-suited for creative text generation like stories.
 
 ## Command Line Version
 
@@ -73,7 +73,7 @@ This provides a text-based interface for story generation.
 You can customize the story generation by modifying the parameters in `app.py`:
 - `max_tokens` - Controls the length of the generated story
 - `temperature` - Adjusts the creativity level (0.0 to 1.0)
-- `model` - Change to a different Qwen model if desired
+- `model` - Change to a different GROQ model if desired
 
 You can also customize the UI by modifying:
 - `templates/index.html` - The main interface
@@ -88,4 +88,4 @@ If you encounter issues:
 
 ## License
 
-This project is created for educational purposes. Please respect the terms of the Qwen API when using this application.
+This project is created for educational purposes. Please respect the terms of the GROQ API when using this application.

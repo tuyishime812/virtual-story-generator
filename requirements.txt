@@ -1,4 +1,7 @@
 # Requirements for the story generator
 requests
 flask
+flask-login
+flask-sqlalchemy
 python-dotenv
+groq
