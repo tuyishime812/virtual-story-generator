@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .admin-header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .admin-nav .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+        
+        .admin-nav .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px;
+        }
+        
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .badge-soft {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .badge-soft-success { background: #d1fae5; color: var(--success-color); }
+        .badge-soft-warning { background: #fef3c7; color: var(--warning-color); }
+        .badge-soft-danger { background: #fee2e2; color: var(--danger-color); }
+        .badge-soft-primary { background: #e0e7ff; color: var(--primary-color); }
+        
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: none;
+            color: var(--primary-color);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1><i class="bi bi-people"></i> User Management</h1>
+                    <p class="text-muted mb-0">Manage registered users and their accounts</p>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <div class="admin-nav">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">Dashboard</a>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-primary">Users</a>
+                <a href="{{ url_for('admin_visits') }}" class="btn btn-outline-primary">Visits</a>
+                <a href="{{ url_for('admin_stories') }}" class="btn btn-outline-primary">Stories</a>
+                <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-primary">Settings</a>
+            </div>
+        </div>
+        
+        <div class="content-card">
+            <!-- Search and Filter -->
+            <form class="search-bar" method="GET">
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Search by username or email..." 
+                       value="{{ search }}">
+                <select name="sort" class="form-select" style="width: auto;">
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Date Joined</option>
+                    <option value="username" {% if sort_by == 'username' %}selected{% endif %}>Username</option>
+                    <option value="email" {% if sort_by == 'email' %}selected{% endif %}>Email</option>
+                    <option value="stories" {% if sort_by == 'stories' %}selected{% endif %}>Stories Count</option>
+                </select>
+                <select name="order" class="form-select" style="width: auto;">
+                    <option value="desc" {% if order == 'desc' %}selected{% endif %}>Descending</option>
+                    <option value="asc" {% if order == 'asc' %}selected{% endif %}>Ascending</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </form>
+            
+            <!-- Users Table -->
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Stories</th>
+                            <th>Last Login</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users.items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="user-avatar">
+                                        {{ user.username[0].upper() }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ user.username }}</strong>
+                                        {% if user.is_admin %}
+                                            <span class="badge badge-soft badge-soft-primary ms-1">Admin</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge badge-soft badge-soft-warning">
+                                    {{ user.stories_generated }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.last_login %}
+                                    {{ user.last_login.strftime('%b %d, %Y %H:%M') }}
+                                {% else %}
+                                    <span class="text-muted">Never</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge badge-soft badge-soft-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-soft badge-soft-warning">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning" 
+                                        onclick="toggleActive({{ user.id }}, {{ 'true' if user.is_active else 'false' }})">
+                                    <i class="bi bi-{{ 'lock' if user.is_active else 'unlock' }}"></i>
+                                </button>
+                                {% if user.id != current_user.id %}
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if users.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if users.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ users.prev_num }}&search={{ search }}&sort={{ sort_by }}&order={{ order }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page in users.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {% if page == users.page %}active{% endif %}">
+                                <a class="page-link" href="?page={{ page }}&search={{ search }}&sort={{ sort_by }}&order={{ order }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ users.next_num }}&search={{ search }}&sort={{ sort_by }}&order={{ order }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleActive(userId, isActive) {
+            if (!confirm(`Are you sure you want to ${isActive ? 'deactivate' : 'activate'} this user?`)) return;
+            
+            fetch(`/admin/users/${userId}/toggle-active`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+        }
+        
+        function deleteUser(userId, username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) return;
+            
+            fetch(`/admin/users/${userId}/delete`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

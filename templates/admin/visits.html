@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Analytics - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .admin-header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .admin-nav .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+        
+        .admin-nav .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+        
+        .stat-card .stat-label {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px;
+        }
+        
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .badge-soft {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .badge-soft-primary { background: #e0e7ff; color: var(--primary-color); }
+        .badge-soft-success { background: #d1fae5; color: var(--success-color); }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: none;
+            color: var(--primary-color);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1><i class="bi bi-graph-up"></i> Visit Analytics</h1>
+                    <p class="text-muted mb-0">Track site visits and user engagement</p>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <div class="admin-nav">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">Dashboard</a>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">Users</a>
+                <a href="{{ url_for('admin_visits') }}" class="btn btn-primary">Visits</a>
+                <a href="{{ url_for('admin_stories') }}" class="btn btn-outline-primary">Stories</a>
+                <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-primary">Settings</a>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_visits }}</div>
+                <div class="stat-label">Total Visits ({{ days }} days)</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, var(--success-color), #059669);">
+                <div class="stat-value">{{ stats.unique_visitors }}</div>
+                <div class="stat-label">Unique Visitors</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, var(--warning-color), #d97706);">
+                <div class="stat-value">{{ "%.2f"|format(stats.total_visits / max(stats.unique_visitors, 1)) }}</div>
+                <div class="stat-label">Avg Visits per User</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <div class="stat-value">{{ stats.top_pages[0][1] if stats.top_pages else 0 }}</div>
+                <div class="stat-label">Most Visited Page</div>
+            </div>
+        </div>
+        
+        <!-- Time Filter -->
+        <div class="content-card">
+            <div class="filter-bar">
+                <label class="fw-bold">Time Period:</label>
+                <select class="form-select" style="width: auto;" onchange="changePeriod(this.value)">
+                    <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 Days</option>
+                    <option value="14" {% if days == 14 %}selected{% endif %}>Last 14 Days</option>
+                    <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 Days</option>
+                    <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 Days</option>
+                </select>
+            </div>
+            
+            <!-- Chart -->
+            <div class="chart-container">
+                <canvas id="visitsChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Top Pages -->
+        <div class="content-card">
+            <h3><i class="bi bi-file-earmark-text"></i> Top Visited Pages</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Page</th>
+                            <th>Visits</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page, count in stats.top_pages %}
+                        <tr>
+                            <td><code>{{ page }}</code></td>
+                            <td>{{ count }}</td>
+                            <td>
+                                <div class="progress" style="height: 8px; width: 150px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ (count / stats.total_visits * 100) if stats.total_visits > 0 else 0 }}%">
+                                    </div>
+                                </div>
+                                <small>{{ "%.1f"|format((count / stats.total_visits * 100) if stats.total_visits > 0 else 0) }}%</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Recent Visits -->
+        <div class="content-card">
+            <h3><i class="bi bi-clock-history"></i> Recent Visits</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>IP Address</th>
+                            <th>Page</th>
+                            <th>User</th>
+                            <th>Browser</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in recent_visits.items %}
+                        <tr>
+                            <td>{{ visit.visited_at.strftime('%b %d, %Y %H:%M') }}</td>
+                            <td><code>{{ visit.ip_address }}</code></td>
+                            <td><code>{{ visit.page }}</code></td>
+                            <td>
+                                {% if visit.user %}
+                                    <span class="badge badge-soft badge-soft-primary">{{ visit.user.username }}</span>
+                                {% else %}
+                                    <span class="text-muted">Guest</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'Chrome' in visit.user_agent %}
+                                    <i class="bi bi-browser-chrome"></i> Chrome
+                                {% elif 'Firefox' in visit.user_agent %}
+                                    <i class="bi bi-browser-firefox"></i> Firefox
+                                {% elif 'Safari' in visit.user_agent %}
+                                    <i class="bi bi-browser-safari"></i> Safari
+                                {% elif 'Edge' in visit.user_agent %}
+                                    <i class="bi bi-browser-edge"></i> Edge
+                                {% else %}
+                                    <i class="bi bi-globe"></i> Other
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if recent_visits.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if recent_visits.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ recent_visits.prev_num }}&days={{ days }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page in recent_visits.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {% if page == recent_visits.page %}active{% endif %}">
+                                <a class="page-link" href="?page={{ page }}&days={{ days }}">{{ page }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if recent_visits.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ recent_visits.next_num }}&days={{ days }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Daily visits data
+        const dailyVisits = {{ daily_visits|tojson }};
+        
+        const ctx = document.getElementById('visitsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dailyVisits.map(v => {
+                    const date = new Date(v.visit_date);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Daily Visits',
+                    data: dailyVisits.map(v => v.visit_count),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        
+        function changePeriod(days) {
+            window.location.href = `?days=${days}`;
+        }
+    </script>
+</body>
+</html>

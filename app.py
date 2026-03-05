@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from groq import Groq
-from models import db, User
+from models import db, User, SiteVisit
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,9 +28,41 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+def admin_required(f):
+    """Decorator to restrict routes to admin users only"""
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            return jsonify({'error': 'Admin access required'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 # Create database tables
 with app.app_context():
     db.create_all()
+
+
+@app.before_request
+def track_visit():
+    """Track all site visits for analytics"""
+    # Skip tracking for static files and admin API endpoints
+    if request.path.startswith('/static') or request.path.startswith('/admin/') and request.method == 'POST':
+        return
+    
+    try:
+        visit = SiteVisit(
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string[:500] if request.user_agent.string else 'Unknown',
+            page=request.path,
+            user_id=current_user.id if current_user.is_authenticated else None,
+            referrer=request.referrer[:500] if request.referrer else None
+        )
+        db.session.add(visit)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 class GroqStoryGenerator:
@@ -133,6 +165,7 @@ def login():
     
     if user and user.check_password(password):
         login_user(user)
+        user.update_last_login()
         return jsonify({'message': 'Login successful'}), 200
     else:
         return jsonify({'error': 'Invalid email or password'}), 401
@@ -258,6 +291,217 @@ def profile():
         'stories_generated': current_user.stories_generated,
         'member_since': current_user.created_at.strftime('%B %d, %Y')
     })
+
+
+# ============== Admin Dashboard Routes ==============
+
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_dashboard():
+    """Main admin dashboard with statistics"""
+    # Get overall statistics
+    total_users = User.query.count()
+    total_visits = SiteVisit.query.count()
+    total_stories = db.session.query(db.func.sum(User.stories_generated)).scalar() or 0
+    
+    # Recent users (last 7 days)
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    new_users_this_week = User.query.filter(User.created_at >= week_ago).count()
+    
+    # Recent visits
+    visits_this_week = SiteVisit.query.filter(SiteVisit.visited_at >= week_ago).count()
+    
+    # Unique visitors this week
+    unique_visitors = db.session.query(
+        db.func.count(db.func.distinct(SiteVisit.ip_address))
+    ).filter(SiteVisit.visited_at >= week_ago).scalar() or 0
+    
+    # Top users by stories generated
+    top_users = User.query.order_by(User.stories_generated.desc()).limit(10).all()
+    
+    # Recent registrations
+    recent_users = User.query.order_by(User.created_at.desc()).limit(10).all()
+    
+    return render_template('admin/dashboard.html',
+                         total_users=total_users,
+                         total_visits=total_visits,
+                         total_stories=total_stories,
+                         new_users_this_week=new_users_this_week,
+                         visits_this_week=visits_this_week,
+                         unique_visitors=unique_visitors,
+                         top_users=top_users,
+                         recent_users=recent_users,
+                         current_user=current_user)
+
+
+@app.route('/admin/users')
+@login_required
+@admin_required
+def admin_users():
+    """User management page"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Get filter parameters
+    search = request.args.get('search', '')
+    sort_by = request.args.get('sort', 'created_at')
+    order = request.args.get('order', 'desc')
+    
+    # Build query
+    query = User.query
+    
+    if search:
+        query = query.filter(
+            db.or_(
+                User.username.ilike(f'%{search}%'),
+                User.email.ilike(f'%{search}%')
+            )
+        )
+    
+    # Apply sorting
+    if sort_by == 'username':
+        query = query.order_by(User.username.asc() if order == 'asc' else User.username.desc())
+    elif sort_by == 'email':
+        query = query.order_by(User.email.asc() if order == 'asc' else User.email.desc())
+    elif sort_by == 'stories':
+        query = query.order_by(User.stories_generated.asc() if order == 'asc' else User.stories_generated.desc())
+    else:  # created_at
+        query = query.order_by(User.created_at.asc() if order == 'asc' else User.created_at.desc())
+    
+    users = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('admin/users.html',
+                         users=users,
+                         search=search,
+                         sort_by=sort_by,
+                         order=order,
+                         current_user=current_user)
+
+
+@app.route('/admin/users/<int:user_id>/toggle-active', methods=['POST'])
+@login_required
+@admin_required
+def toggle_user_active(user_id):
+    """Activate or deactivate a user account"""
+    user = User.query.get_or_404(user_id)
+    
+    if user.id == current_user.id:
+        return jsonify({'error': 'Cannot deactivate your own account'}), 400
+    
+    user.is_active_flag = not user.is_active_flag
+    db.session.commit()
+    
+    return jsonify({
+        'message': f'User {"activated" if user.is_active_flag else "deactivated"}',
+        'is_active': user.is_active_flag
+    })
+
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    """Delete a user account"""
+    user = User.query.get_or_404(user_id)
+    
+    if user.id == current_user.id:
+        return jsonify({'error': 'Cannot delete your own account'}), 400
+    
+    db.session.delete(user)
+    db.session.commit()
+    
+    return jsonify({'message': 'User deleted successfully'})
+
+
+@app.route('/admin/visits')
+@login_required
+@admin_required
+def admin_visits():
+    """Site visits analytics page"""
+    days = request.args.get('days', 30, type=int)
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    
+    # Get visit statistics
+    stats = SiteVisit.get_stats(days)
+    
+    # Get daily visits for chart
+    daily_visits = SiteVisit.get_daily_visits(days)
+    
+    # Recent visits
+    recent_visits = SiteVisit.query.order_by(
+        SiteVisit.visited_at.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('admin/visits.html',
+                         stats=stats,
+                         daily_visits=daily_visits,
+                         recent_visits=recent_visits,
+                         days=days,
+                         current_user=current_user)
+
+
+@app.route('/admin/stories')
+@login_required
+@admin_required
+def admin_stories():
+    """Stories analytics page"""
+    # Get users who have generated stories
+    users_with_stories = User.query.filter(
+        User.stories_generated > 0
+    ).order_by(User.stories_generated.desc()).all()
+    
+    total_stories = sum(u.stories_generated for u in users_with_stories)
+    avg_stories_per_user = total_stories / len(users_with_stories) if users_with_stories else 0
+    
+    return render_template('admin/stories.html',
+                         users_with_stories=users_with_stories,
+                         total_stories=total_stories,
+                         avg_stories_per_user=avg_stories_per_user,
+                         current_user=current_user)
+
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_settings():
+    """Admin settings page"""
+    if request.method == 'POST':
+        data = request.get_json()
+        
+        # Handle creating a new admin
+        if data.get('action') == 'make_admin':
+            user_id = data.get('user_id')
+            user = User.query.get(user_id)
+            if user:
+                user.is_admin = True
+                db.session.commit()
+                return jsonify({'message': 'User promoted to admin'})
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Handle removing admin
+        if data.get('action') == 'remove_admin':
+            user_id = data.get('user_id')
+            user = User.query.get(user_id)
+            if user:
+                if user.id == current_user.id:
+                    return jsonify({'error': 'Cannot remove your own admin privileges'}), 400
+                user.is_admin = False
+                db.session.commit()
+                return jsonify({'message': 'Admin privileges removed'})
+            return jsonify({'error': 'User not found'}), 404
+        
+        return jsonify({'error': 'Invalid action'}), 400
+    
+    # GET request - show all admins
+    admins = User.query.filter(User.is_admin == True).all()
+    all_users = User.query.all()
+    
+    return render_template('admin/settings.html',
+                         admins=admins,
+                         all_users=all_users,
+                         current_user=current_user)
 
 
 if __name__ == '__main__':
